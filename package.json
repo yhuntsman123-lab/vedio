@@ -1,0 +1,19 @@
+{
+  "name": "ai-studio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "demo": "tsx src/worker/demo.ts",
+    "test": "tsx tests/runAllTests.ts",
+    "test:full": "tsx tests/fullProjectThreeRounds.ts",
+    "test:security": "tsx tests/promptVaultSecurity.ts",
+    "test:providers": "tsx tests/providerCapabilities.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.8.0"
+  }
+}

@@ -1,0 +1,9 @@
+# AI Studio LLMs index
+
+- / (homepage)
+- /episode/{id} (public episode pages with VideoObject metadata)
+- /docs (architecture and quality baselines)
+
+Content policy:
+- Style signature required: dark epic + cyberpunk neon cyan + dark guofeng.
+- Prompt fidelity rule: semantic parity with source script is mandatory.

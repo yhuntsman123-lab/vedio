@@ -1,0 +1,35 @@
+{
+  "workflow_name": "ai_studio_shot_render_flux_pulid_fallback",
+  "version": "1.0.0",
+  "description": "角色一致性镜头渲染模板（FLUX + PuLID 备选链路）",
+  "inputs": {
+    "base_model": "flux1-dev.safetensors",
+    "actor_face_ref": "r2://actors/{actor_id}/face_ref.png",
+    "actor_body_ref": "r2://actors/{actor_id}/front.png",
+    "prompt_source": "{{SHOT_PROMPT_SOURCE}}",
+    "positive_prompt": "{{STYLE_PREFIX}}, {{SHOT_PROMPT_EN}}, same identity, cinematic frame",
+    "negative_prompt": "identity drift, deformed face, low detail, watermark",
+    "width": 1024,
+    "height": 1536,
+    "steps": 24,
+    "guidance": 3.5,
+    "seed": "{{SEED}}"
+  },
+  "locks": {
+    "pulid_weight": 0.85,
+    "ipadapter_weight": 0.55
+  },
+  "quality_gate": {
+    "face_similarity_min": 0.8,
+    "style_similarity_min": 0.7,
+    "semantic_check_min": 0.9,
+    "retry_on_fail": 1
+  },
+  "outputs": {
+    "image": "r2://renders/{project_id}/{shot_id}.png",
+    "meta": "r2://renders/{project_id}/{shot_id}.json",
+    "prompt_source": "{{SHOT_PROMPT_SOURCE}}",
+    "prompt_en": "{{SHOT_PROMPT_EN}}",
+    "semantic_check_score": "{{SEMANTIC_CHECK_SCORE}}"
+  }
+}

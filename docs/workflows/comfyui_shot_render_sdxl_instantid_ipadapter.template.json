@@ -1,0 +1,40 @@
+{
+  "workflow_name": "ai_studio_shot_render_sdxl_instantid_ipadapter",
+  "version": "1.0.0",
+  "description": "角色一致性镜头渲染模板（SDXL + InstantID + IP-Adapter + ControlNet）",
+  "inputs": {
+    "base_model": "sdxl_base_1.0.safetensors",
+    "vae": "sdxl_vae.safetensors",
+    "actor_face_ref": "r2://actors/{actor_id}/face_ref.png",
+    "actor_body_ref": "r2://actors/{actor_id}/front.png",
+    "pose_ref": "optional:r2://shots/{shot_id}/pose.png",
+    "prompt_source": "{{SHOT_PROMPT_SOURCE}}",
+    "positive_prompt": "{{STYLE_PREFIX}}, {{SHOT_PROMPT_EN}}, same character, consistent facial features",
+    "negative_prompt": "low quality, blurry, extra fingers, deformed face, cross-eye, bad anatomy",
+    "width": 1024,
+    "height": 1536,
+    "steps": 28,
+    "cfg": 5.5,
+    "sampler": "dpmpp_2m_sde",
+    "seed": "{{SEED}}"
+  },
+  "locks": {
+    "instantid_weight": 0.9,
+    "ipadapter_weight": 0.65,
+    "pose_control_weight": 0.45
+  },
+  "quality_gate": {
+    "face_similarity_min": 0.78,
+    "style_similarity_min": 0.72,
+    "semantic_check_min": 0.9,
+    "retry_on_fail": 1,
+    "fallback_pipeline": "flux_pulid"
+  },
+  "outputs": {
+    "image": "r2://renders/{project_id}/{shot_id}.png",
+    "meta": "r2://renders/{project_id}/{shot_id}.json",
+    "prompt_source": "{{SHOT_PROMPT_SOURCE}}",
+    "prompt_en": "{{SHOT_PROMPT_EN}}",
+    "semantic_check_score": "{{SEMANTIC_CHECK_SCORE}}"
+  }
+}

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/private/
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /

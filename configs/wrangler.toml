@@ -1,0 +1,26 @@
+name = "ai-studio-worker"
+main = "apps/worker/src/index.ts"
+compatibility_date = "2026-05-05"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ai-studio"
+database_id = "REPLACE_ME"
+
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "ai-studio-assets"
+
+[[queues.producers]]
+binding = "RENDER_QUEUE"
+queue = "ai-studio-render"
+
+[[queues.consumers]]
+queue = "ai-studio-render"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[vars]
+CLOUD_RUN_COMPOSER_URL = "https://REPLACE_ME.run.app/compose"
+MODAL_ENDPOINT = "https://REPLACE_ME.modal.run/render"
+INTERNAL_API_KEY = "REPLACE_WITH_RUNTIME_SECRET"
