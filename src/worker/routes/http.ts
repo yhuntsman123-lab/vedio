@@ -6,7 +6,7 @@ import { verifyPayloadSignature } from "../../security/signing";
 import { checkRateLimit } from "../../security/rateLimit";
 
 const db = new InMemoryD1();
-db.ensureUser({ id: "demo_user", email: "demo@aistudio.dev" });
+db.ensureUser({ id: "demo_user", email: "demo@aitvmake.com" });
 const service = new AiStudioService(db);
 
 function json(data: unknown, status = 200): Response {

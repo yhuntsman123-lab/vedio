@@ -21,6 +21,6 @@ max_batch_size = 10
 max_batch_timeout = 5
 
 [vars]
-CLOUD_RUN_COMPOSER_URL = "https://REPLACE_ME.run.app/compose"
-MODAL_ENDPOINT = "https://REPLACE_ME.modal.run/render"
+CLOUD_RUN_COMPOSER_URL = "https://aitvmake.com/api/compose"
+MODAL_ENDPOINT = "https://aitvmake.com/api/render"
 INTERNAL_API_KEY = "REPLACE_WITH_RUNTIME_SECRET"

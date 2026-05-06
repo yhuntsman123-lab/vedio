@@ -9,8 +9,8 @@ const sample = {
   description: "A digital actor infiltrates a neon megatower under drone surveillance.",
   durationSec: 42,
   uploadDate: "2026-05-05",
-  thumbnailUrl: "https://cdn.aistudio.example/thumbs/neon.jpg",
-  contentUrl: "https://cdn.aistudio.example/videos/neon.mp4",
+  thumbnailUrl: "https://aitvmake.com/thumbs/neon.jpg",
+  contentUrl: "https://aitvmake.com/videos/neon.mp4",
   transcript: "Night drops over the city. The protagonist slips into the tower...",
   tags: ["cyberpunk", "dark guofeng", "comic drama", "neon"]
 };
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: EpisodePageProps): Promise<Me
   return {
     title: `${sample.title} | AI Studio`,
     description: sample.description,
-    alternates: { canonical: `https://aistudio.example/episode/${params.id}` },
+    alternates: { canonical: `https://aitvmake.com/episode/${params.id}` },
     openGraph: {
       type: "video.episode",
       title: sample.title,

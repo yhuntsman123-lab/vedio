@@ -3,7 +3,7 @@ import { AiStudioService } from "./api/service";
 
 async function main(): Promise<void> {
   const db = new InMemoryD1();
-  db.ensureUser({ id: "user_demo", email: "demo@aistudio.dev" });
+  db.ensureUser({ id: "user_demo", email: "demo@aitvmake.com" });
   db.credit("user_demo", 1000, "topup-demo");
 
   const service = new AiStudioService(db);
