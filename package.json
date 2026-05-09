@@ -9,7 +9,9 @@
     "test": "tsx tests/runAllTests.ts",
     "test:full": "tsx tests/fullProjectThreeRounds.ts",
     "test:security": "tsx tests/promptVaultSecurity.ts",
-    "test:providers": "tsx tests/providerCapabilities.ts"
+    "test:providers": "tsx tests/providerCapabilities.ts",
+    "test:billing": "tsx tests/billingProviders.ts",
+    "test:checkout": "tsx tests/checkoutSessionIntegration.ts"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",

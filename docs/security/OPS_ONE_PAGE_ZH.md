@@ -24,6 +24,11 @@
 - 填法：Stripe 控制台 webhook secret
 - 影响：不填会导致支付回调无法入账
 
+4. `CREEM_WEBHOOK_SECRET` / `DODO_WEBHOOK_SECRET`
+- 用途：Creem / Dodo 回调验签
+- 填法：各平台 webhook secret
+- 影响：对应平台启用后，不填会导致该平台回调失败
+
 ### 模型与渲染（生产必填）
 4. `GEMINI_API_KEY`
 - 用途：主LLM（改写/分镜/翻译）
@@ -40,6 +45,16 @@
 ### 可选（Cloudflare）
 8. `CLOUDFLARE_AI_ACCOUNT_ID` + `CLOUDFLARE_AI_TOKEN`
 - 用途：Cloudflare免费模型备选
+
+## 2.1 多支付备援开关（防封号）
+1. `BILLING_STRIPE_ENABLED`
+2. `BILLING_CREEM_ENABLED`
+3. `BILLING_DODO_ENABLED`
+- 规则：只有值为 `TRUE` 才启用，其他值都视为关闭
+
+4. `BILLING_PROVIDER_PRIORITY`
+- 示例：`stripe,creem,dodo`
+- 含义：按优先级自动选可用通道
 
 ## 3. 英文出海怎么开
 

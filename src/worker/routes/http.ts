@@ -1,6 +1,9 @@
 import { InMemoryD1 } from "../db/inMemoryD1";
 import { AiStudioService } from "../api/service";
 import { verifyStripeSignature } from "../../billing/stripeWebhook";
+import { verifyGenericWebhookSignature } from "../../billing/genericWebhook";
+import { selectBillingProvider, getBillingProviderConfig, type BillingProvider } from "../../billing/providers";
+import { createCheckoutWithFailover } from "../../billing/checkoutSession";
 import { renderPromptSecure, listPromptTemplateIds } from "../../prompts/vault/service";
 import { verifyPayloadSignature } from "../../security/signing";
 import { checkRateLimit } from "../../security/rateLimit";
@@ -18,7 +21,26 @@ function json(data: unknown, status = 200): Response {
 
 export async function handleHttp(
   request: Request,
-  env: { STRIPE_WEBHOOK_SECRET?: string; PROMPT_VAULT_SECRET?: string; INTERNAL_API_KEY?: string }
+  env: {
+    STRIPE_WEBHOOK_SECRET?: string;
+    CREEM_WEBHOOK_SECRET?: string;
+    DODO_WEBHOOK_SECRET?: string;
+    BILLING_STRIPE_ENABLED?: string;
+    BILLING_CREEM_ENABLED?: string;
+    BILLING_DODO_ENABLED?: string;
+    BILLING_PROVIDER_PRIORITY?: string;
+    STRIPE_SECRET_KEY?: string;
+    CREEM_API_KEY?: string;
+    DODO_PAYMENTS_API_KEY?: string;
+    BILLING_PRODUCT_MAP_JSON?: string;
+    STRIPE_SUCCESS_URL?: string;
+    STRIPE_CANCEL_URL?: string;
+    APP_BASE_URL?: string;
+    DODO_API_BASE?: string;
+    CREEM_API_BASE?: string;
+    PROMPT_VAULT_SECRET?: string;
+    INTERNAL_API_KEY?: string;
+  }
 ): Promise<Response> {
   const url = new URL(request.url);
 
@@ -29,6 +51,33 @@ export async function handleHttp(
   if (request.method === "POST" && url.pathname === "/api/billing/credit-demo") {
     db.credit("demo_user", 1000, `demo-credit-${Date.now()}`);
     return json({ ok: true, wallet: db.getWallet("demo_user") });
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/billing/providers") {
+    const selected = selectBillingProvider(env);
+    return json({
+      ok: true,
+      selectedProvider: selected.provider
+    });
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/billing/checkout-session") {
+    const body = (await request.json()) as {
+      preferredProvider?: BillingProvider;
+      pointsPackageId: string;
+      customerEmail?: string;
+      clientReferenceId?: string;
+    };
+    const created = await createCheckoutWithFailover(
+      env,
+      {
+        preferredProvider: body.preferredProvider,
+        pointsPackageId: body.pointsPackageId,
+        customerEmail: body.customerEmail,
+        clientReferenceId: body.clientReferenceId
+      }
+    );
+    return json({ ok: true, ...created });
   }
 
   if (request.method === "POST" && url.pathname === "/api/projects") {
@@ -157,6 +206,42 @@ export async function handleHttp(
       return json({ ok: false, error: "invalid signature" }, 400);
     }
 
+    return json({ ok: true });
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/billing/webhook/creem") {
+    const payload = await request.text();
+    const signature = request.headers.get("x-signature") ?? "";
+    const cfg = getBillingProviderConfig(env, "creem");
+    if (!cfg.webhookSecret) {
+      return json({ ok: false, error: "missing creem secret" }, 500);
+    }
+    const ok = verifyGenericWebhookSignature({
+      payload,
+      signatureHeader: signature,
+      endpointSecret: cfg.webhookSecret
+    });
+    if (!ok) {
+      return json({ ok: false, error: "invalid signature" }, 400);
+    }
+    return json({ ok: true });
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/billing/webhook/dodo") {
+    const payload = await request.text();
+    const signature = request.headers.get("x-signature") ?? "";
+    const cfg = getBillingProviderConfig(env, "dodo");
+    if (!cfg.webhookSecret) {
+      return json({ ok: false, error: "missing dodo secret" }, 500);
+    }
+    const ok = verifyGenericWebhookSignature({
+      payload,
+      signatureHeader: signature,
+      endpointSecret: cfg.webhookSecret
+    });
+    if (!ok) {
+      return json({ ok: false, error: "invalid signature" }, 400);
+    }
     return json({ ok: true });
   }
 
