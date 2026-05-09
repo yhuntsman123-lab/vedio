@@ -24,9 +24,14 @@ max_batch_timeout = 5
 CLOUD_RUN_COMPOSER_URL = "https://aitvmake.com/api/compose"
 MODAL_ENDPOINT = "https://aitvmake.com/api/render"
 INTERNAL_API_KEY = "REPLACE_WITH_RUNTIME_SECRET"
+STRIPE_ENABLED = "TRUE"
+CREEM_ENABLED = "TRUE"
+DODO_ENABLED = "TRUE"
+PAYMENT_PROVIDER_ORDER = "creem,dodo,stripe"
+# Backward-compatible keys (keep for old deployments)
 BILLING_STRIPE_ENABLED = "TRUE"
-BILLING_CREEM_ENABLED = "FALSE"
-BILLING_DODO_ENABLED = "FALSE"
-BILLING_PROVIDER_PRIORITY = "stripe,creem,dodo"
+BILLING_CREEM_ENABLED = "TRUE"
+BILLING_DODO_ENABLED = "TRUE"
+BILLING_PROVIDER_PRIORITY = "creem,dodo,stripe"
 # package -> provider product id mapping
 BILLING_PRODUCT_MAP_JSON = "{\"points_small\":{\"stripePriceId\":\"price_xxx\",\"creemProductId\":\"prod_xxx\",\"dodoProductId\":\"prod_xxx\"}}"

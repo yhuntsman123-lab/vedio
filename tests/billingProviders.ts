@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { buildBillingConfigs, parseProviderPriority, selectBillingProvider } from "../src/billing/providers";
 
 const cfg = buildBillingConfigs({
-  BILLING_STRIPE_ENABLED: "TRUE",
-  BILLING_CREEM_ENABLED: "FALSE",
-  BILLING_DODO_ENABLED: "TRUE"
+  STRIPE_ENABLED: "TRUE",
+  CREEM_ENABLED: "FALSE",
+  DODO_ENABLED: "TRUE"
 });
 
 assert.equal(cfg.find((x) => x.provider === "stripe")?.enabled, true);
@@ -16,10 +16,10 @@ assert.deepEqual(p.slice(0, 3), ["creem", "dodo", "stripe"]);
 
 const selected1 = selectBillingProvider(
   {
-    BILLING_STRIPE_ENABLED: "TRUE",
-    BILLING_CREEM_ENABLED: "TRUE",
-    BILLING_DODO_ENABLED: "FALSE",
-    BILLING_PROVIDER_PRIORITY: "creem,stripe,dodo"
+    STRIPE_ENABLED: "TRUE",
+    CREEM_ENABLED: "TRUE",
+    DODO_ENABLED: "FALSE",
+    PAYMENT_PROVIDER_ORDER: "creem,stripe,dodo"
   },
   undefined
 );
@@ -27,10 +27,10 @@ assert.equal(selected1.provider, "creem");
 
 const selected2 = selectBillingProvider(
   {
-    BILLING_STRIPE_ENABLED: "TRUE",
-    BILLING_CREEM_ENABLED: "TRUE",
-    BILLING_DODO_ENABLED: "FALSE",
-    BILLING_PROVIDER_PRIORITY: "creem,stripe,dodo"
+    STRIPE_ENABLED: "TRUE",
+    CREEM_ENABLED: "TRUE",
+    DODO_ENABLED: "FALSE",
+    PAYMENT_PROVIDER_ORDER: "creem,stripe,dodo"
   },
   "stripe"
 );
@@ -38,7 +38,7 @@ assert.equal(selected2.provider, "stripe");
 
 let noEnabled = false;
 try {
-  selectBillingProvider({ BILLING_STRIPE_ENABLED: "FALSE", BILLING_CREEM_ENABLED: "FALSE", BILLING_DODO_ENABLED: "FALSE" });
+  selectBillingProvider({ STRIPE_ENABLED: "FALSE", CREEM_ENABLED: "FALSE", DODO_ENABLED: "FALSE" });
 } catch {
   noEnabled = true;
 }

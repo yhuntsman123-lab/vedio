@@ -6,6 +6,10 @@ export interface Env {
   STRIPE_WEBHOOK_SECRET?: string;
   CREEM_WEBHOOK_SECRET?: string;
   DODO_WEBHOOK_SECRET?: string;
+  STRIPE_ENABLED?: string;
+  CREEM_ENABLED?: string;
+  DODO_ENABLED?: string;
+  PAYMENT_PROVIDER_ORDER?: string;
   BILLING_STRIPE_ENABLED?: string;
   BILLING_CREEM_ENABLED?: string;
   BILLING_DODO_ENABLED?: string;

@@ -29,6 +29,10 @@ export async function handleHttp(
     BILLING_CREEM_ENABLED?: string;
     BILLING_DODO_ENABLED?: string;
     BILLING_PROVIDER_PRIORITY?: string;
+    STRIPE_ENABLED?: string;
+    CREEM_ENABLED?: string;
+    DODO_ENABLED?: string;
+    PAYMENT_PROVIDER_ORDER?: string;
     STRIPE_SECRET_KEY?: string;
     CREEM_API_KEY?: string;
     DODO_PAYMENTS_API_KEY?: string;

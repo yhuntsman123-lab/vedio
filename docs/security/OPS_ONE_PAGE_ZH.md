@@ -47,14 +47,21 @@
 - 用途：Cloudflare免费模型备选
 
 ## 2.1 多支付备援开关（防封号）
-1. `BILLING_STRIPE_ENABLED`
-2. `BILLING_CREEM_ENABLED`
-3. `BILLING_DODO_ENABLED`
+主变量（推荐使用）：
+1. `STRIPE_ENABLED`
+2. `CREEM_ENABLED`
+3. `DODO_ENABLED`
 - 规则：只有值为 `TRUE` 才启用，其他值都视为关闭
 
-4. `BILLING_PROVIDER_PRIORITY`
+4. `PAYMENT_PROVIDER_ORDER`
 - 示例：`stripe,creem,dodo`
 - 含义：按优先级自动选可用通道
+
+兼容变量（老配置可继续使用）：
+- `BILLING_STRIPE_ENABLED`
+- `BILLING_CREEM_ENABLED`
+- `BILLING_DODO_ENABLED`
+- `BILLING_PROVIDER_PRIORITY`
 
 ## 3. 英文出海怎么开
 

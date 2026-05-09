@@ -8,6 +8,10 @@ export interface BillingProviderConfig {
 }
 
 export interface BillingEnv {
+  STRIPE_ENABLED?: string;
+  CREEM_ENABLED?: string;
+  DODO_ENABLED?: string;
+  PAYMENT_PROVIDER_ORDER?: string;
   BILLING_STRIPE_ENABLED?: string;
   BILLING_CREEM_ENABLED?: string;
   BILLING_DODO_ENABLED?: string;
@@ -53,22 +57,26 @@ export function parseProviderPriority(priorityRaw?: string): BillingProvider[] {
 }
 
 export function buildBillingConfigs(env: BillingEnv): BillingProviderConfig[] {
+  const stripeEnabled = isTrueFlag(env.BILLING_STRIPE_ENABLED) || isTrueFlag(env.STRIPE_ENABLED);
+  const creemEnabled = isTrueFlag(env.BILLING_CREEM_ENABLED) || isTrueFlag(env.CREEM_ENABLED);
+  const dodoEnabled = isTrueFlag(env.BILLING_DODO_ENABLED) || isTrueFlag(env.DODO_ENABLED);
+
   return [
     {
       provider: "stripe",
-      enabled: isTrueFlag(env.BILLING_STRIPE_ENABLED),
+      enabled: stripeEnabled,
       webhookSecret: env.STRIPE_WEBHOOK_SECRET,
       checkoutBaseUrl: "https://stripe.com"
     },
     {
       provider: "creem",
-      enabled: isTrueFlag(env.BILLING_CREEM_ENABLED),
+      enabled: creemEnabled,
       webhookSecret: env.CREEM_WEBHOOK_SECRET,
       checkoutBaseUrl: "https://www.creem.io"
     },
     {
       provider: "dodo",
-      enabled: isTrueFlag(env.BILLING_DODO_ENABLED),
+      enabled: dodoEnabled,
       webhookSecret: env.DODO_WEBHOOK_SECRET,
       checkoutBaseUrl: "https://app.dodopayments.com/home"
     }
@@ -89,7 +97,7 @@ export function selectBillingProvider(env: BillingEnv, preferred?: BillingProvid
     }
   }
 
-  const priority = parseProviderPriority(env.BILLING_PROVIDER_PRIORITY);
+  const priority = parseProviderPriority(env.BILLING_PROVIDER_PRIORITY ?? env.PAYMENT_PROVIDER_ORDER);
   for (const p of priority) {
     const found = enabled.find((x) => x.provider === p);
     if (found) {
