@@ -4,9 +4,18 @@ interface Hit {
 }
 
 const BUCKET = new Map<string, Hit>();
+let lastSweepAt = 0;
 
 export function checkRateLimit(key: string, limit: number, windowMs: number): { ok: boolean; remaining: number } {
   const now = Date.now();
+  if (now - lastSweepAt > 60_000) {
+    for (const [k, hit] of BUCKET.entries()) {
+      if (hit.resetAt <= now) {
+        BUCKET.delete(k);
+      }
+    }
+    lastSweepAt = now;
+  }
   const existing = BUCKET.get(key);
   if (!existing || existing.resetAt <= now) {
     BUCKET.set(key, { count: 1, resetAt: now + windowMs });

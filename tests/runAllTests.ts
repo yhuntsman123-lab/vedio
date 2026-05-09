@@ -114,7 +114,7 @@ async function round3CostControlAndSettlement(): Promise<void> {
 
   const ledger = db.getLedgerForUser("u3");
   assert.ok(ledger.some((x) => x.type === "debit_hold"));
-  assert.ok(ledger.some((x) => x.type === "refund") || ledger.some((x) => x.type === "debit_settle") || true);
+  assert.ok(ledger.some((x) => x.type === "refund") || ledger.some((x) => x.type === "debit_settle") );
 }
 
 async function runAll(): Promise<void> {

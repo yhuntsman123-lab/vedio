@@ -14,7 +14,7 @@ function now(): string {
 }
 
 function makeId(prefix: string): string {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+  return `${prefix}_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
 }
 
 export class InMemoryD1 {
@@ -59,6 +59,14 @@ export class InMemoryD1 {
     };
     this.projects.set(project.id, project);
     return project;
+  }
+
+  getProject(projectId: string): Project {
+    const p = this.projects.get(projectId);
+    if (!p) {
+      throw new Error(`project not found: ${projectId}`);
+    }
+    return p;
   }
 
   preAuthorizeAndCreateJob(input: PreAuthorizeInput): Job {

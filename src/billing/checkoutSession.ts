@@ -5,6 +5,7 @@ export interface CheckoutRequestInput {
   pointsPackageId: string;
   customerEmail?: string;
   clientReferenceId?: string;
+  userId?: string;
   preferredProvider?: BillingProvider;
 }
 
@@ -18,6 +19,7 @@ interface BillingProductMapItem {
   stripePriceId?: string;
   creemProductId?: string;
   dodoProductId?: string;
+  points?: number;
 }
 
 interface ExtendedBillingEnv extends BillingEnv {
@@ -42,7 +44,7 @@ export async function createCheckoutWithFailover(
     throw new Error("no billing provider enabled; set BILLING_*_ENABLED=TRUE");
   }
 
-  const priority = parseProviderPriority(env.BILLING_PROVIDER_PRIORITY);
+  const priority = parseProviderPriority(env.BILLING_PROVIDER_PRIORITY ?? env.PAYMENT_PROVIDER_ORDER);
   const ordered = orderProviders(enabled, priority, input.preferredProvider);
 
   const errors: string[] = [];
@@ -138,6 +140,8 @@ async function createStripeCheckout(env: ExtendedBillingEnv, input: CheckoutRequ
   form.set("line_items[0][quantity]", "1");
   if (input.customerEmail) form.set("customer_email", input.customerEmail);
   if (input.clientReferenceId) form.set("client_reference_id", input.clientReferenceId);
+  if (input.userId) form.set("metadata[user_id]", input.userId);
+  form.set("metadata[points_package_id]", input.pointsPackageId);
 
   const res = await fetchFn("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
@@ -174,7 +178,11 @@ async function createCreemCheckout(env: ExtendedBillingEnv, input: CheckoutReque
     units: 1,
     request_id: input.clientReferenceId,
     success_url: `${appBase}/billing/success?provider=creem`,
-    customer: input.customerEmail ? { email: input.customerEmail } : undefined
+    customer: input.customerEmail ? { email: input.customerEmail } : undefined,
+    metadata: {
+      user_id: input.userId,
+      points_package_id: input.pointsPackageId
+    }
   };
 
   const res = await fetchFn(`${apiBase}/v1/checkouts`, {
@@ -214,7 +222,11 @@ async function createDodoCheckout(env: ExtendedBillingEnv, input: CheckoutReques
   const body = {
     product_cart: [{ product_id: mapped.dodoProductId, quantity: 1 }],
     return_url: `${appBase}/billing/success?provider=dodo`,
-    metadata: input.clientReferenceId ? { client_reference_id: input.clientReferenceId } : undefined,
+    metadata: {
+      client_reference_id: input.clientReferenceId,
+      user_id: input.userId,
+      points_package_id: input.pointsPackageId
+    },
     customer: input.customerEmail ? { email: input.customerEmail } : undefined
   };
 

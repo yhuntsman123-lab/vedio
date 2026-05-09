@@ -4,8 +4,9 @@ export function verifyStripeSignature(params: {
   payload: string;
   stripeSignatureHeader: string;
   endpointSecret: string;
+  toleranceSeconds?: number;
 }): boolean {
-  const { payload, stripeSignatureHeader, endpointSecret } = params;
+  const { payload, stripeSignatureHeader, endpointSecret, toleranceSeconds = 300 } = params;
   const parts = Object.fromEntries(
     stripeSignatureHeader.split(",").map((x) => {
       const [k, v] = x.split("=");
@@ -16,6 +17,14 @@ export function verifyStripeSignature(params: {
   const timestamp = parts.t;
   const signatures = (parts.v1 ?? "").split(";").filter(Boolean);
   if (!timestamp || signatures.length === 0) {
+    return false;
+  }
+  const ts = Number(timestamp);
+  if (!Number.isFinite(ts)) {
+    return false;
+  }
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (Math.abs(nowSec - ts) > toleranceSeconds) {
     return false;
   }
 

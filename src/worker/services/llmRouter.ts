@@ -3,7 +3,7 @@ import type { LlmProviderResponse } from "../../shared/types";
 export interface LlmRouterInput {
   system: string;
   user: string;
-  task: "rewrite" | "translate" | "semantic-check";
+  task: "rewrite" | "storyboard" | "translate" | "semantic-check";
 }
 
 /**
@@ -29,7 +29,6 @@ export async function callLlmWithFallback(input: LlmRouterInput): Promise<LlmPro
 }
 
 async function mockCall(provider: "gemini" | "cloudflare" | "deepseek", input: LlmRouterInput): Promise<string> {
-  // TODO: wire real provider SDK/API calls in next step.
   if (!input.user.trim()) {
     throw new Error("Empty user prompt");
   }
@@ -40,6 +39,10 @@ async function mockCall(provider: "gemini" | "cloudflare" | "deepseek", input: L
 
   if (input.task === "translate") {
     return "dark epic, cyberpunk neon cyan lighting, cinematic close-up, same character identity, stealth outfit";
+  }
+
+  if (input.task === "rewrite") {
+    return input.user;
   }
 
   return JSON.stringify({

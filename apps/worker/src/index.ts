@@ -39,23 +39,28 @@ export default {
   async queue(batch: MessageBatch<{ type: string; payload: unknown }>, env: Record<string, string | undefined>): Promise<void> {
     for (const message of batch.messages) {
       const body = message.body;
-      if (body.type === "render_pipeline") {
-        await handleRenderQueueMessage(
-          {
-            MODAL_ENDPOINT: env.MODAL_ENDPOINT,
-            MODAL_TOKEN: env.MODAL_TOKEN,
-            CLOUD_RUN_COMPOSER_URL: env.CLOUD_RUN_COMPOSER_URL,
-            CLOUD_RUN_ID_TOKEN: env.CLOUD_RUN_ID_TOKEN
-          },
-          body.payload as {
-            jobId: string;
-            projectId: string;
-            actorId: string;
-            shots: Array<{ shotId: string; promptEn: string; promptSource: string; semanticCheckScore: number; durationSec: number; seed: number }>;
-          }
-        );
+      try {
+        if (body.type === "render_pipeline") {
+          await handleRenderQueueMessage(
+            {
+              MODAL_ENDPOINT: env.MODAL_ENDPOINT,
+              MODAL_TOKEN: env.MODAL_TOKEN,
+              CLOUD_RUN_COMPOSER_URL: env.CLOUD_RUN_COMPOSER_URL,
+              CLOUD_RUN_ID_TOKEN: env.CLOUD_RUN_ID_TOKEN
+            },
+            body.payload as {
+              jobId: string;
+              projectId: string;
+              actorId: string;
+              shots: Array<{ shotId: string; promptEn: string; promptSource: string; semanticCheckScore: number; durationSec: number; seed: number }>;
+            }
+          );
+        }
+        message.ack();
+      } catch (err) {
+        // Do not ack on failure; let Cloudflare Queues retry.
+        console.error("queue message failed", err);
       }
-      message.ack();
     }
   }
 };

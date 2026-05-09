@@ -1,6 +1,7 @@
 name = "ai-studio-worker"
 main = "apps/worker/src/index.ts"
 compatibility_date = "2026-05-05"
+compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
@@ -19,11 +20,12 @@ queue = "ai-studio-render"
 queue = "ai-studio-render"
 max_batch_size = 10
 max_batch_timeout = 5
+max_retries = 3
+dead_letter_queue = "ai-studio-render-dlq"
 
 [vars]
 CLOUD_RUN_COMPOSER_URL = "https://aitvmake.com/api/compose"
 MODAL_ENDPOINT = "https://aitvmake.com/api/render"
-INTERNAL_API_KEY = "REPLACE_WITH_RUNTIME_SECRET"
 STRIPE_ENABLED = "TRUE"
 CREEM_ENABLED = "TRUE"
 DODO_ENABLED = "TRUE"
@@ -33,5 +35,7 @@ BILLING_STRIPE_ENABLED = "TRUE"
 BILLING_CREEM_ENABLED = "TRUE"
 BILLING_DODO_ENABLED = "TRUE"
 BILLING_PROVIDER_PRIORITY = "creem,dodo,stripe"
-# package -> provider product id mapping
-BILLING_PRODUCT_MAP_JSON = "{\"points_small\":{\"stripePriceId\":\"price_xxx\",\"creemProductId\":\"prod_xxx\",\"dodoProductId\":\"prod_xxx\"}}"
+# SENSITIVE VALUES MUST BE INJECTED VIA `wrangler secret put`:
+# INTERNAL_API_KEY, PROMPT_VAULT_SECRET, STRIPE_SECRET_KEY,
+# CREEM_API_KEY, DODO_PAYMENTS_API_KEY, BILLING_PRODUCT_MAP_JSON,
+# STRIPE_WEBHOOK_SECRET, CREEM_WEBHOOK_SECRET, DODO_WEBHOOK_SECRET

@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS projects (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   title TEXT NOT NULL,
+  style_profile_id TEXT NOT NULL,
+  content_language TEXT NOT NULL, -- zh|en
   source_type TEXT NOT NULL, -- paste|txt|md|url
   source_uri TEXT,
   source_text TEXT,

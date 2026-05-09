@@ -5,14 +5,22 @@ import { STYLE_PROFILES, enforceStylePrompt } from "../../shared/styleProfiles";
 import { selectSceneVariant } from "../../shared/sceneMasters";
 import { detectLanguage } from "../../shared/i18n";
 
+export async function rewriteScriptOnly(rawScript: string, mode: "preserve" | "balanced" | "dramatic"): Promise<string> {
+  const system = "You are an expert screenplay adapter. Rewrite for short-form visual drama. Output plain text only.";
+  const user = `Mode: ${mode}\nInput:\n${rawScript}`;
+  const rewritten = await callLlmWithFallback({ system, user, task: "rewrite" });
+  return rewritten.text.trim();
+}
+
 export async function rewriteToStoryboard(
   rawScript: string,
   mode: "preserve" | "balanced" | "dramatic",
   styleId: StyleProfileId
 ): Promise<StoryboardResult> {
-  const system = "You are an expert screenplay adapter. Output JSON only.";
-  const user = `Mode: ${mode}\nInput:\n${rawScript}`;
-  const rewritten = await callLlmWithFallback({ system, user, task: "rewrite" });
+  const rewrittenScript = await rewriteScriptOnly(rawScript, mode);
+  const system = "You are an expert storyboard planner. Output JSON only.";
+  const user = `Input:\n${rewrittenScript}`;
+  const rewritten = await callLlmWithFallback({ system, user, task: "storyboard" });
   const detectedLanguage = detectLanguage(rawScript);
 
   const parsed = JSON.parse(rewritten.text) as Omit<StoryboardResult, "shots" | "language"> & {
@@ -86,15 +94,15 @@ async function semanticCheck(promptSource: string, promptEn: string): Promise<Se
   const user = `source: ${promptSource}\nenglish_prompt: ${promptEn}`;
   const result = await callLlmWithFallback({ system, user, task: "semantic-check" });
   const parsed = JSON.parse(result.text) as SemanticCheckResult;
+
   if (!parsed.pass || parsed.semanticCheckScore < 0.9) {
-    // A single auto-rewrite attempt keeps costs bounded.
-    const retryEn = promptEn;
     const retryResult = await callLlmWithFallback({
       system,
-      user: `source: ${promptSource}\nenglish_prompt: ${retryEn}`,
+      user: `source: ${promptSource}\nenglish_prompt: ${promptEn}\nprevious_drift_items: ${parsed.driftItems.join(", ")}\nPlease re-evaluate strictly and return JSON only.`,
       task: "semantic-check"
     });
     return JSON.parse(retryResult.text) as SemanticCheckResult;
   }
+
   return parsed;
 }

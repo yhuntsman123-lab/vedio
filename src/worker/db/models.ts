@@ -62,6 +62,7 @@ export interface ProjectInput {
   id: string;
   userId: string;
   title: string;
+  styleProfileId: "cn_cyber_dark" | "cn_gothic_dark" | "cn_realistic_drama";
   contentLanguage: "zh" | "en";
   sourceType: "paste" | "txt" | "md" | "url";
   sourceText: string;
@@ -72,6 +73,7 @@ export interface Project {
   id: string;
   userId: string;
   title: string;
+  styleProfileId: "cn_cyber_dark" | "cn_gothic_dark" | "cn_realistic_drama";
   contentLanguage: "zh" | "en";
   sourceType: "paste" | "txt" | "md" | "url";
   sourceText: string;

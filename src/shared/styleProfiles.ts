@@ -40,6 +40,10 @@ export function enforceStylePrompt(styleId: StyleProfileId, promptEn: string): v
   // 风格锁：命中禁词即拦截，避免“动漫+仿真”混风
   const p = promptEn.toLowerCase();
   const profile = STYLE_PROFILES[styleId];
+  const mustInclude = profile.allowedKeywords.some((kw) => p.includes(kw.toLowerCase()));
+  if (!mustInclude) {
+    throw new Error(`style lock violation: prompt missing style anchors for '${styleId}'`);
+  }
   for (const blocked of profile.blockedKeywords) {
     if (p.includes(blocked)) {
       throw new Error(`style lock violation: contains blocked keyword '${blocked}'`);

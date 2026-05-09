@@ -25,7 +25,11 @@ export const SCENE_MASTERS: SceneMaster[] = [
 ];
 
 export function selectSceneVariant(sceneText: string, mood: string): SceneVariant {
-  const master = SCENE_MASTERS[0];
+  const sceneLower = sceneText.toLowerCase();
+  const master =
+    SCENE_MASTERS.find((m) => sceneLower.includes(m.sceneId.replace(/_/g, " "))) ??
+    SCENE_MASTERS.find((m) => sceneLower.includes(m.baseEnvironment.toLowerCase())) ??
+    SCENE_MASTERS[0];
   if (sceneText.toLowerCase().includes("潜入") || mood.includes("tense") || mood.includes("紧张")) {
     return master.variants.find((v) => v.key === "night_stealth") ?? master.variants[0];
   }

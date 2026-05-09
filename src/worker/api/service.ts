@@ -3,12 +3,13 @@ import type { StyleProfileId } from "../../shared/styleProfiles";
 import { detectLanguage } from "../../shared/i18n";
 import { InMemoryD1 } from "../db/inMemoryD1";
 import { normalizeInput } from "../services/inputNormalizer";
-import { rewriteToStoryboard } from "../services/storyboard";
+import { rewriteScriptOnly, rewriteToStoryboard } from "../services/storyboard";
 import { runJobPipeline } from "../queue/pipeline";
 
 export class AiStudioService {
   private storyboardCache = new Map<string, StoryboardResult>();
   private projectStyle = new Map<string, StyleProfileId>();
+  private rewriteCache = new Map<string, string>();
 
   constructor(private readonly db: InMemoryD1) {}
 
@@ -27,6 +28,7 @@ export class AiStudioService {
       id: projectId,
       userId: input.userId,
       title: input.title,
+      styleProfileId: input.styleProfileId,
       contentLanguage: input.contentLanguage ?? detectLanguage(normalized.sourceText),
       sourceType: normalized.sourceType,
       sourceText: normalized.sourceText,
@@ -34,6 +36,25 @@ export class AiStudioService {
     });
     this.projectStyle.set(projectId, input.styleProfileId);
     return { projectId };
+  }
+
+  async rewriteProject(input: { projectId: string; mode: RewriteMode }): Promise<{ projectId: string; rewrittenScript: string; mode: RewriteMode }> {
+    const project = this.db.getProject(input.projectId);
+    const rewrittenScript = await rewriteScriptOnly(project.sourceText, input.mode);
+    this.rewriteCache.set(input.projectId, rewrittenScript);
+    return { projectId: input.projectId, rewrittenScript, mode: input.mode };
+  }
+
+  async storyboardProject(input: { projectId: string; mode: RewriteMode }): Promise<StoryboardResult> {
+    const style = this.projectStyle.get(input.projectId);
+    if (!style) {
+      throw new Error("style profile is required and immutable per project");
+    }
+    const project = this.db.getProject(input.projectId);
+    const source = this.rewriteCache.get(input.projectId) ?? project.sourceText;
+    const storyboard = await rewriteToStoryboard(source, input.mode, style);
+    this.storyboardCache.set(input.projectId, storyboard);
+    return storyboard;
   }
 
   async rewriteAndStoryboard(input: {
@@ -108,17 +129,22 @@ export class AiStudioService {
     }
   }
 
-  getJob(jobId: string): { status: string; outputR2Key?: string; settledPoints?: number; errorMessage?: string } {
+  getJob(jobId: string): { status: string; outputR2Key?: string; settledPoints?: number; estimatedPoints?: number; errorMessage?: string } {
     const job = this.db.getJob(jobId);
     return {
       status: job.status,
       outputR2Key: job.outputR2Key,
       settledPoints: job.settledPoints,
+      estimatedPoints: job.estimatedPoints,
       errorMessage: job.errorMessage
     };
   }
 
+  creditUser(userId: string, points: number, idempotencyKey: string, note: string): void {
+    this.db.credit(userId, points, idempotencyKey, note);
+  }
+
   private makeId(prefix: string): string {
-    return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+    return `${prefix}_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
   }
 }

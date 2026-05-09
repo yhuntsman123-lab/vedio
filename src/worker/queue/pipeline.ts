@@ -1,6 +1,5 @@
 import { toRenderMessages } from "../../queue/renderMessage";
 import type { StoryboardResult } from "../../shared/types";
-import { buildComposePlan } from "../../compose/ffmpegPlan";
 import { getProviderCapabilities, splitShotByCapabilities, type ProviderId } from "../../providers/capabilities";
 import { InMemoryD1 } from "../db/inMemoryD1";
 
@@ -35,17 +34,9 @@ export async function runJobPipeline(db: InMemoryD1, args: {
   const rendered = await Promise.all(renderMessages.map(simulateRenderWithFallback));
 
   db.updateJobStatus(args.jobId, "TTS_DONE");
-  const voiced = await Promise.all(rendered.map(simulateTts));
+  await Promise.all(rendered.map(simulateTts));
 
   db.updateJobStatus(args.jobId, "COMPOSITING");
-  const plan = buildComposePlan(
-    voiced.map((v) => ({
-      shotId: v.shotId,
-      image: v.image,
-      audio: v.audio,
-      durationSec: v.durationSec
-    }))
-  );
 
   const outputR2Key = `outputs/${args.projectId}/${args.jobId}/final.mp4`;
   const totalDuration = args.storyboard.shots.reduce((sum, s) => sum + s.durationSec, 0);
@@ -53,7 +44,6 @@ export async function runJobPipeline(db: InMemoryD1, args: {
 
   db.updateJobStatus(args.jobId, "SUCCEEDED", outputR2Key);
 
-  void plan;
   return {
     outputR2Key,
     actualPoints,
@@ -63,7 +53,6 @@ export async function runJobPipeline(db: InMemoryD1, args: {
 }
 
 function estimateActualPoints(shots: number, totalDurationSec: number): number {
-  // Frozen cost model for MVP.
   return Math.ceil(shots * 8 + totalDurationSec * 1.2);
 }
 
@@ -94,8 +83,8 @@ async function simulateRenderWithFallback(msg: {
 }): Promise<{ shotId: string; image: string; durationSec: number }> {
   try {
     return await simulateRender(msg);
-  } catch {
-    // frozen behavior: auto fallback render once instead of immediate failure
+  } catch (err) {
+    console.error("simulateRender failed, fallback used", err);
     return {
       shotId: msg.shotId,
       image: `r2://renders/fallback_${msg.shotId}.png`,
